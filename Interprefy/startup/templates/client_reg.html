@@ -1,0 +1,40 @@
+{% extends 'test_startapp/base.html' %}
+{% block title %}
+    Регистрация
+{% endblock %}
+
+
+{% block content %}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+    
+    function send_pin() {
+    $.ajax({
+                url: "{% url 'interprefy:ajax_send_pin' %}",
+                type: "POST",
+                data: { mobile_number:  $("#TelephoneNumber").val() },
+            })
+            .done(function(data) {
+                alert("PIN sent via SMS!");
+                setTimeout(() => {
+                    btn.attr("disabled", false)
+                },
+                60 * 1000
+                )
+                btn.attr("disabled", true)
+            })
+            .fail(function(jqXHR, textStatus, errorThrown) {
+                alert(errorThrown + ' : ' + jqXHR.responseText);
+            });
+}
+</script>
+    <form method="post">
+        {%csrf_token%}
+        {{form}}
+        <!-- <input type="tel" id="mobile_number" name="mobile_number" placeholder="79876543210" required> -->
+        <!-- <input type="text" id="mobile_number" name="mobile_number" placeholder="111-111-1111" required> -->
+        <button class="btn" type="button" onClick="send_pin()">Отправить код</button>
+        <button class="btn btn-success" type="submit">Submit</button>
+    </form>
+    
+{% endblock %}
