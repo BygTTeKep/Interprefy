@@ -12,20 +12,6 @@ from .models import (
     
 )
 
-
-# def validate_phone_number(phonenumber):
-#     if re.search(r'^((8|\+7)[\- ]?)?(\(?\d{3}\)?[\- ]?)?[\d\- ]{7,10}$',phonenumber) == None:
-#         raise ValidationError(
-#             _("неверный формат номера телефона")
-#         )
-
-# def validate_fullname(fullname:str):
-#     if len(fullname.split()) != 3:
-#         raise ValidationError(
-#             _("%(value)s ")# <================================
-#         )
-    # И если есть другие знаки кроме букв
-
 class IntermediaresForm(forms.ModelForm):
     Email = forms.EmailField(widget=forms.EmailInput(attrs={"type":"email"}))
     Description = forms.CharField(widget=forms.Textarea(attrs={"rows":"5"}))
