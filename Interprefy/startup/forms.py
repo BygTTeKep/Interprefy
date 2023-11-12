@@ -1,23 +1,46 @@
 from typing import Any
 from django import forms
+from django.contrib import messages
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.forms import UserCreationForm
 from django.utils.text import slugify
 import re
 from .models import (
-    Reviews,
-    Clients,
-    Intermediares
+    # Reviews,
+    # Clients,
+    # Intermediares
+    CUser
     
 )
 
+
+# def validate_phone_number(phonenumber):
+#     if re.search(r'^((8|\+7)[\- ]?)?(\(?\d{3}\)?[\- ]?)?[\d\- ]{7,10}$',phonenumber) == None:
+#         raise ValidationError(
+#             _("неверный формат номера телефона")
+#         )
+
+# def validate_fullname(fullname:str):
+#     if len(fullname.split()) != 3:
+#         raise ValidationError(
+#             _("%(value)s ")# <================================
+#         )
+    # И если есть другие знаки кроме букв
+
+# def validName(name):
+#     if Intermediares.objects.filter(Name=name).exists():
+#         return ValidationError(_("name already exists"))
+
 class IntermediaresForm(forms.ModelForm):
-    Email = forms.EmailField(widget=forms.EmailInput(attrs={"type":"email"}))
-    Description = forms.CharField(widget=forms.Textarea(attrs={"rows":"5"}))
+    # Name = forms.CharField(max_length=50, validators=[validName])
+    Email = forms.EmailField(widget=forms.EmailInput(attrs={"type":"email", 'class':'form-control', 'placeholder':'example@example.com'}))
+    Description = forms.CharField(widget=forms.Textarea(attrs={"rows":"5",'class':'form-control'}))
     class Meta:
-        model = Intermediares
-        fields = ('Name', 'Email', 'Description')
+        model = CUser
+        fields = ('username', 'Email', 'Description')
+
+
 
 class ClientForm(UserCreationForm):
     TelephoneNumber = forms.CharField(max_length=15,required=True,widget=forms.TextInput(attrs={'type': 'tel', 
@@ -29,9 +52,9 @@ class ClientForm(UserCreationForm):
                                                                                            "id":"FullName",
                                                                                            "pattern": "",
                                                                                            }))
-    pin = forms.IntegerField(required=True,min_value=10**5, max_value=10**6)
+    # pin = forms.IntegerField(required=True,min_value=10**5, max_value=10**6)
     class Meta:
-        model = Clients
+        model = CUser
         fields = 'username', 'FullName', 'TelephoneNumber', "password1", "password2"
     
 
@@ -56,8 +79,8 @@ class ClientForm(UserCreationForm):
         self.fields['password2'].help_text = '<span class="form-text text-muted"><small>Enter the same password as before, for verification.</small></span>'	
 
 
-class ReviewsForm(forms.ModelForm):
-    # Подумать над прикреплением картинки
-    class Meta:
-        model = Reviews
-        fields = ('Review','Image')
+# class ReviewsForm(forms.ModelForm):
+#     # Подумать над прикреплением картинки
+#     class Meta:
+#         model = Reviews
+#         fields = ('Review','Image')
