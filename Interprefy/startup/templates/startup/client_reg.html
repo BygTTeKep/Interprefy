@@ -1,4 +1,4 @@
-{% extends 'test_startapp/base.html' %}
+{% extends 'startup/base.html' %}
 {% block title %}
     Регистрация
 {% endblock %}
@@ -31,9 +31,8 @@
     <form method="post">
         {%csrf_token%}
         {{form}}
-        <!-- <input type="tel" id="mobile_number" name="mobile_number" placeholder="79876543210" required> -->
-        <!-- <input type="text" id="mobile_number" name="mobile_number" placeholder="111-111-1111" required> -->
-        <button class="btn" type="button" onClick="send_pin()">Отправить код</button>
+        <input type="tel" id="mobile_number" name="mobile_number" placeholder="79876543210" required>
+        <!-- <button class="btn" type="button" onClick="send_pin()">Отправить код</button>-->
         <button class="btn btn-success" type="submit">Submit</button>
     </form>
     

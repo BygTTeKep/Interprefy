@@ -1,23 +1,30 @@
-from django.shortcuts import render
-
 from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import permission_required, login_required
+from django.urls import reverse
 from django.http import HttpRequest, HttpResponse
 # from .tasks import sms_send, _verify_pin
 from django.views.decorators.http import require_GET
 from django.contrib import messages
 from django.core.cache import cache
+from django.contrib.auth import get_user_model
 import random
-from Interprefy.settings import SMSAERO_EMAIL, SMSAERO_API_KEY
+from django.conf import settings# SMSAERO_EMAIL, SMSAERO_API_KEY
+from django.db.models import Subquery
 from smsaero import SmsAero
+from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.views.decorators.csrf import csrf_exempt
 from .forms import (ClientForm,
                     IntermediaresForm,
+                    AddProductForm,
+                    
                     )
-from .models import (Clients, 
-                     Intermediares, 
-                     Subscription, 
-                     Posts)
+from .models import (CUser, 
+                     Posts,
+                     Products,
+                     Categories,
+                     )
+User = get_user_model()
 
 
 def _verify_pin(mobile_number, pin):
@@ -29,9 +36,34 @@ def _get_pin(length=6):
     return random.sample(range(10**(length-1), 10**length), 1)[0]
 
 
+def main(request:HttpRequest):
+    '''
+        дефолтный all() с сортировкой по коментариям оценкам за месяц
+    '''
+    # context = {
+    #     'top': CUser.objects.filter().all().order_by()
+    # }
+    return render(request, 'test_startapp/main.html', {})
+
+
+
+# Create your views here.
+# @require_GET
+# def main_view(request: HttpRequest, id: int) -> HttpResponse:
+#     context = {
+#         'subscriptions': Subscription.objects.filter(Subscribe_client_id=id).select_related(Clients).select_related(Intermediares),
+#         'posts': Intermediares.objects.filter(Subscribe_intermediary_id=Subscription.objects.filter(Subscribe_client_id=id).get('Subscribe_intermediary_id')),
+#         'posts':Intermediares.objects.raw(f'''SELECT text_post, Intermediares.Name FROM Posts
+#                                             INNER JOIN Intermediares ON Posts.posts_intermediary_id = Intermediares.id 
+#                                             INNER JOIN Subscription  ON Subscription.Subscribe_intermediary_id = Intermediares.id
+#                                             INNER JOIN Clients ON Subscription.Subscribe_client_id = Clients.id
+#                                             WHERE Subscribe_client_id = {id}'''),
+#     }
+#     return render(request, "test_startapp/main.html", context)
 
 @csrf_exempt
 def ajax_send_pin(request: HttpRequest):
+    messages.info(request,"=====================")
     """ Sends SMS PIN to the specified number """
     mobile_number = request.POST.get('mobile_number', "")
     if not mobile_number:
@@ -42,7 +74,7 @@ def ajax_send_pin(request: HttpRequest):
     # store the PIN in the cache for later verification.
     cache.set(mobile_number, pin, 5*60) 
 
-    api = SmsAero(SMSAERO_EMAIL, SMSAERO_API_KEY)
+    api = SmsAero(settings.SMSAERO_EMAIL, settings.SMSAERO_API_KEY)
     res = api.send(mobile_number, f"{pin}")
     return HttpResponse("Message sent", status=200)
 
@@ -52,6 +84,7 @@ def client_registration(request: HttpRequest):
         form = ClientForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
+            #проверка фуллнаме на длину и цифры
             user.first_name= str(request.POST.get('FullName')).split()[0]
             user.last_name= str(request.POST.get('FullName')).split()[1]
             user.MiddleName=str(request.POST.get('FullName')).split()[2]
@@ -60,7 +93,11 @@ def client_registration(request: HttpRequest):
             telephone_number = request.POST.get("mobile_number", "")
             if _verify_pin(telephone_number, pin):
                 form.save()
-                return redirect('test_startapp:client_detail', kwargs={'slug', user.username})
+                username = form.cleaned_data["username"]
+                password = form.cleaned_data["password1"]
+                user = authenticate(username=username, password=password)
+                login(request, user=user)
+                return redirect('test_startapp:client_detail', slug=user.username)
             else:
                 cache.delete(telephone_number)
                 messages.error(request, "Invalid PIN")
@@ -70,3 +107,85 @@ def client_registration(request: HttpRequest):
             "form": ClientForm()
         }
         return render(request, "test_startapp/client_reg.html", context)
+    # return render(request, "test_startapp/client_reg.html", {})
+
+@require_GET
+def detail_client(request:HttpRequest, slug):
+    context = {
+        'users': CUser.objects.get(UserSlug=slug)
+    }
+    return render(request, 'test_startapp/detail_client.html', context)
+
+def intermediary_registration(request:HttpRequest):
+    if request.method == "POST":
+        form = IntermediaresForm(request.POST or None)
+        if form.is_valid():
+            intermediary = form.save(commit=False)
+            intermediary.is_intermediary = True
+            intermediary.user_permissions.set(['add_posts', 'change_posts', 'delete_posts', 'view_posts',
+                                               'add_products', 'change_products', 'delete_products', 'view_products',
+                                               ])
+            intermediary.save()
+            return redirect('test_startapp:detail_intermediary', slug=intermediary.username)
+        else:
+            messages.error(request, form.errors)
+            return render(request, 'test_startapp/intermediary_reg.html', {'form':IntermediaresForm(request.POST)})#<================
+    else:
+        context = {
+            "form": IntermediaresForm()
+        }
+        return render(request, 'test_startapp/intermediary_reg.html', context)
+    
+# @login_required
+# @permission_required(perm=['add_post', 'change_post', 'delete_post'])
+
+def detail_intermediary(request:HttpRequest, slug):
+    '''
+        Отображает все товары, магазины, страны откуда/в поставки/доставка
+        Информация о посреднике
+    '''
+    # a = CUser.objects.raw(f'''SELECT id FROM CUser WHERE UserSlug={slug}''')
+    intermediary_id = CUser.objects.filter(UserSlug=slug).only("id")
+    context = {
+        'intermediaries': CUser.objects.get(UserSlug=slug),
+        'products': Products.objects.filter(IntermediaryID=Subquery(intermediary_id))
+        # 'products': Products.objects.select_related(Categories).select_related(CUser).filter(UserSlug=slug).get(id)
+    }
+    return render(request, 'test_startapp/detail_intermediary.html', context)
+
+def top_intermediares(request:HttpRequest):
+    context = {
+        'intermediares': CUser.objects.filter(is_intermediary=True).all()
+    }
+    return render(request, 'test_startapp/top_intermediary.html', context)
+
+@login_required
+def add_products_intermediary(request:HttpRequest, slug):
+    if request.method == "POST":
+        form = AddProductForm(request.POST, request.FILES)
+        if form.is_valid():
+            messages.info(request, 'created')
+            product = form.save(commit=False)
+            product.IntermediaryID = CUser.objects.get(UserSlug=slug)
+            product.save()
+            return redirect('test_startapp:add_product')
+        else:
+            messages.info(request, form.errors)
+    else:
+        context = {
+            'form': AddProductForm()
+        }
+        return render(request, 'test_startapp/add_products_intermediary.html', context)
+    
+def loginpage(request:HttpRequest):
+    print(request.user)
+    if request.method == "POST":
+        username = request.POST["username"]
+        password = request.POST["password"]
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user=user)
+            return render(request, 'test_startapp/login.html', {})
+    else:
+        return render(request, 'test_startapp/login.html', {})
+    return render(request, 'test_startapp/login.html', {})

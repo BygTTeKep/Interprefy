@@ -1,0 +1,24 @@
+{% extends 'startup/base.html' %}
+{% block title %}
+{% endblock %}
+
+{% block content %}
+{% include 'test_startapp/navbar.html' %}
+    {% if products %}
+    {% for product in products %}
+        <div class="card-group">
+            <div class="card">
+            {% if product.ImageProducts %}
+                <img src="{{product.ImageProducts.url}}" class="card-img-top" alt="..." height="100px" width="100px">
+            {% endif %}
+            <div class="card-body">
+                <h5 class="card-title">{{product.Name}}</h5>
+                <p class="card-text">{{product.Price}}</p>
+                <p class="card-text"><small class="text-body-secondary">{{product.UnitsInStock}}</small></p>
+            </div>
+            </div>
+        </div> 
+    {% endfor %} 
+    {% else %} -
+    {% endif %}
+{% endblock %}

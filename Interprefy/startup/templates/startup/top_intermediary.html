@@ -1,0 +1,10 @@
+{% extends 'startup/base.html' %}
+
+{% block title %}
+{% endblock %}
+
+{% block content %}
+    {% for intermediary in intermediares %}
+        <p>{{ intermediary.username }} {{ intermediary.Rating }}</p>
+    {% endfor %}
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends 'startup/base.html' %}
+{% block title %}
+    
+{% endblock %}
+
+{% block content %}
+    <form method="post">
+        {% csrf_token %}
+        {{form}}
+        <!-- Name:
+        <input id="Name" name= 'Name' type="text" class='form-control'>
+        Email:
+        <input id="Email" name= 'Email' type="email" class='form-control' placeholder='example@example.com'>
+        <input id="Description" name='Description' type="text" rows="5" class='form-control' > -->
+        <button class="btn btn-success" type="submit">Submit</button>
+    </form>
+{% endblock %}
