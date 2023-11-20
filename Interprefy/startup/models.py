@@ -29,7 +29,7 @@ def get_path_upload_image(user, file):
     if len(head) > 10:
         head = head[:10]
     file_name = head + "_" + time + "." + end_extention
-    return os.path.join("user_{0}_{1}").format(user, file_name)
+    return os.path.join("{0}/{1}").format(user, file_name)
 
 
 
@@ -40,7 +40,6 @@ class CUser(AbstractUser, models.Model):
     # following = models.ManyToManyField('self', verbose_name='Подписки', related_name='followers', symmetrical=False, blank=True)
     is_intermediary = models.BooleanField(default=False)
     Email = models.EmailField()
-    Rating = models.FloatField(default=0.0)
     Description = models.CharField(max_length=250)
     FromCountry = models.CharField(max_length=50, null=True)
     ImageIntermediares = models.ImageField(upload_to=f"Image/Avatar/", null=True)
@@ -78,5 +77,16 @@ class Posts(models.Model):
     posts_intermediary_id = models.ForeignKey(CUser, on_delete=models.CASCADE)
     text_post = models.TextField(max_length=1000, null=False)
     ImagePost = models.ImageField(upload_to=f"{posts_intermediary_id}/Post_Image/", null=True)
-    # DatePost = models.DateTimeField(auto_now_add=True)
-    # Like = models.IntegerField()
+    DatePost = models.DateTimeField(auto_now_add=True)
+    def save(self, *args, **kwargs) -> None:
+        if self.ImagePost:
+            self.ImagePost.name = get_path_upload_image(
+                self.posts_intermediary_id.username, self.ImagePost.name
+            )
+        return super().save(*args, **kwargs)
+
+# class Reviews(models.Model):
+#     Rating_intermediary_id = models.ForeignKey(CUser, on_delete=models.CASCADE)
+#     Rating = models.IntegerField()
+#     Review = models.CharField()
+#     ImageReview = models.ImageField()

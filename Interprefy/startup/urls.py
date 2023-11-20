@@ -15,11 +15,10 @@ from django.conf.urls.static import static
 
 
 
-app_name = 'test_startapp'
+app_name = 'interprefy'
 
 urlpatterns = [
     path('Interprefy', main, name='Interprefy'),
-
 
 
 

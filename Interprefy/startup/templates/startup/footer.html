@@ -114,9 +114,21 @@
   
     <!-- Copyright -->
     <div class="text-center p-4" style="background-color: rgba(0, 0, 0, 0.05);">
-      © 2021 Copyright:
+      <p id="current_date_time_block"></p> Copyright:
       <a class="text-reset fw-bold" href="https://mdbootstrap.com/">MDBootstrap.com</a>
     </div>
     <!-- Copyright -->
   </footer>
   <!-- Footer -->
+  <script language="javascript" type="text/javascript">
+    function date_time()
+    {
+        var current_datetime = new Date();
+        var year = current_datetime.getFullYear();
+        return '© ' + year;
+    }
+    document.getElementById('current_date_time_block').innerHTML = date_time();
+</script>
+
+  
+  

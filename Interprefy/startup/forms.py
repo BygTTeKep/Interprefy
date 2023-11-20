@@ -7,10 +7,8 @@ from django.contrib.auth.forms import UserCreationForm
 from django.utils.text import slugify
 import re
 from .models import (
-    # Reviews,
-    # Clients,
-    # Intermediares
-    CUser
+    CUser,
+    Products
     
 )
 
@@ -77,6 +75,15 @@ class ClientForm(UserCreationForm):
         self.fields['password2'].widget.attrs['placeholder'] = 'Confirm Password'
         self.fields['password2'].label = ''
         self.fields['password2'].help_text = '<span class="form-text text-muted"><small>Enter the same password as before, for verification.</small></span>'	
+
+
+class AddProductForm(forms.ModelForm):
+    class Meta:
+        model = Products
+        fields = ('Name', 'Price', 'UnitsInStock', 'ImageProducts')
+    def __init__(self, *args, **kwargs):
+        super(AddProductForm, self).__init__(*args, **kwargs)
+        self.fields['ImageProducts'].required = False
 
 
 # class ReviewsForm(forms.ModelForm):
