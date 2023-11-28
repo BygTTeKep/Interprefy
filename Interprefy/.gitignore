@@ -1,4 +1,3 @@
-Interprefy/settings.py
 .env
 gunicorn.service
 gunicorn.socket

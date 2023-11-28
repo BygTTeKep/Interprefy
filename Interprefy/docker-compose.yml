@@ -4,15 +4,24 @@ services:
   interprefy:
     build: .
     command: python manage.py runserver 0.0.0.0:8000
+    # gunicorn hello_django.wsgi:application --bind 0.0.0.0:8000
     ports:
       - 8000:8000
+    volumes:
+      - ../Interprefy:/Interprefy
+    env_file:
+      - ./.env
     depends_on:
       - pgdb
 
   pgdb:
-    image: postgres:15-bullseye
+    image: postgres:15.5
     container_name: pgdb1
-    environment:
-      - POSTGRES_DB=Interprefy
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
+    env_file:
+      - ./.env
+    ports:
+      - "5432:5432"
+    # environment:
+    #   - POSTGRES_DB=Interprefy
+    #   - POSTGRES_USER=postgres
+    #   - POSTGRES_PASSWORD=postgres

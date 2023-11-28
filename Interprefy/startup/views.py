@@ -50,6 +50,7 @@ def main(request:HttpRequest):
     # context = {
     #     'top_intermediares': CUser.objects.filter().all().order_by()
     # }
+    print(CUser.objects.all())
     return render(request, 'startup/main.html', {})
 
 
