@@ -8,6 +8,14 @@ from django.contrib import messages
 from django.core.cache import cache
 from django.contrib.auth import get_user_model
 import random
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import authentication, permissions
+from .serializers import (CUserSerializer, 
+                          ProductsSerializer,
+                          CategorySerializer,
+                          PostsSerializer,
+                          )
 from django.conf import settings# SMSAERO_EMAIL, SMSAERO_API_KEY
 from django.db.models import Subquery
 from smsaero import SmsAero
@@ -17,7 +25,6 @@ from django.views.decorators.csrf import csrf_exempt
 from .forms import (ClientForm,
                     IntermediaresForm,
                     AddProductForm,
-                    
                     )
 from .models import (CUser, 
                      Posts,
@@ -184,3 +191,41 @@ def loginpage(request:HttpRequest):
     else:
         return render(request, 'startup/login.html', {})
     return render(request, 'startup/login.html', {})
+
+class ListUser(APIView):
+    # authentication_classes = []
+    # permission_classes = []
+    def get(self, request):
+        queryset = CUser.objects.all()
+        users = CUserSerializer(
+            instance=queryset,
+            many=True
+        )
+        return Response(users.data)
+    
+class ListProducts(APIView):
+    def get(self, request):
+        queryset = Products.objects.all()
+        products = ProductsSerializer(
+            instance=queryset,
+            many=True
+        )
+        return Response(products.data)
+    
+class ListCategories(APIView):
+    def get(self, request):
+        queryset = Categories.objects.all()
+        categories = CategorySerializer(
+            instance=queryset,
+            many = True
+        )
+        return Response(categories.data)
+    
+class ListPosts(APIView):
+    def get(self, request):
+        queryset = Posts.objects.all()
+        posts = PostsSerializer(
+            instance=queryset,
+            many=True
+        )
+        return Response(posts.data)

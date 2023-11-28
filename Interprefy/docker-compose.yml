@@ -2,10 +2,17 @@ version: '2.21'
 
 services:
   interprefy:
-    build: ./Interprefy
+    build: .
     command: python manage.py runserver 0.0.0.0:8000
-    volumes:
-      - ./Interprefy/:/Interprefy/
     ports:
       - 8000:8000
-    
+    depends_on:
+      - pgdb
+
+  pgdb:
+    image: postgres:15-bullseye
+    container_name: pgdb1
+    environment:
+      - POSTGRES_DB=Interprefy
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres

@@ -9,6 +9,8 @@ from .views import (
     add_products_intermediary,
     loginpage,
     main,
+    ListUser,
+    ListProducts,
 )
 from django.conf import settings
 from django.conf.urls.static import static
@@ -29,7 +31,10 @@ urlpatterns = [
     path('intermediary/<slug:slug>/', detail_intermediary, name='detail_intermediary'),
     path('intermediary/<slug:slug>/add-products', add_products_intermediary, name='add_product'),
     path('top', top_intermediares, name='top'),
-    path('accounts/login/', loginpage, name='login')
+    path('accounts/login/', loginpage, name='login'),
+
+    path('api/users/', ListUser.as_view(), name='api_users'),
+    path('api/products/', ListProducts.as_view(), name='api_products'),
 ]
 
 if settings.DEBUG:
